@@ -27,6 +27,7 @@ import ChatRow from "@/components/chat/ChatRow"
 import ChatTextArea from "@/components/chat/ChatTextArea"
 import TaskHeader from "@/components/chat/TaskHeader"
 import TelemetryBanner from "@/components/common/TelemetryBanner"
+import Timeline from "../common/Timeline"
 
 interface ChatViewProps {
 	isHidden: boolean
@@ -972,6 +973,9 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 					)}
 				</>
 			)}
+			{/* Timeline component at the bottom of the chat but above buttons and input */}
+			<Timeline messages={modifiedMessages} />
+
 			<ChatTextArea
 				ref={textAreaRef}
 				inputValue={inputValue}

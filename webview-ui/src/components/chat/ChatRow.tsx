@@ -37,9 +37,69 @@ import UserMessage from "./UserMessage"
 const ChatRowContainer = styled.div`
 	padding: 10px 6px 10px 15px;
 	position: relative;
+	margin: 8px 15px;
 
 	&:hover ${CheckpointControls} {
 		opacity: 1;
+	}
+
+	& > div {
+		position: relative;
+		background-color: rgba(180, 180, 180, 0.1);
+		border-radius: 12px;
+		padding: 12px 16px;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+
+		&[data-message-type="user_feedback"] {
+			background-color: rgb(54, 25, 134);
+			color: var(--vscode-foreground);
+			margin-left: auto;
+			margin-right: 10px;
+			max-width: 85%;
+		}
+
+		&:not([data-message-type="user_feedback"]):not(:empty) {
+			margin-right: auto;
+			margin-left: 10px;
+			max-width: 85%;
+
+			&:after {
+				content: "";
+				position: absolute;
+				left: -10px;
+				bottom: 15px;
+				width: 0;
+				height: 0;
+				border: 10px solid transparent;
+				border-right-color: var(--vscode-editor-inactiveSelectionBackground);
+				border-left: 0;
+				border-bottom: 0;
+			}
+		}
+
+		&[data-message-type="error"],
+		&[data-message-type="api_req_started"],
+		&[data-message-type="checkpoint_created"],
+		&[data-message-type="load_mcp_documentation"] {
+			background-color: transparent;
+			box-shadow: none;
+			padding: 4px 0;
+
+			&:after {
+				display: none;
+			}
+		}
+		&[data-message-type="completion_result"] {
+			background-color: rgb(10, 51, 24);
+			margin-right: auto;
+			margin-left: 10px;
+			max-width: 85%;
+			color: white;
+
+			&:after {
+				display: none;
+			}
+		}
 	}
 `
 
@@ -91,10 +151,13 @@ const ChatRow = memo(
 		// Store the previous height to compare with the current height
 		// This allows us to detect changes without causing re-renders
 		const prevHeightRef = useRef(0)
+		const messageType = message.type === "say" ? message.say : message.ask
 
 		const [chatrow, { height }] = useSize(
-			<ChatRowContainer>
-				<ChatRowContent {...props} />
+			<ChatRowContainer data-message-type={messageType}>
+				<div data-message-type={messageType}>
+					<ChatRowContent {...props} />
+				</div>
 			</ChatRowContainer>,
 		)
 
@@ -244,10 +307,10 @@ export const ChatRowContent = ({
 					<span
 						className="codicon codicon-check"
 						style={{
-							color: successColor,
+							color: "white",
 							marginBottom: "-1.5px",
 						}}></span>,
-					<span style={{ color: successColor, fontWeight: "bold" }}>Task Completed</span>,
+					<span style={{ color: "white", fontWeight: "bold" }}>Task Completed</span>,
 				]
 			case "api_req_started":
 				const getIconSpan = (iconName: string, color: string) => (
@@ -875,12 +938,29 @@ export const ChatRowContent = ({
 					)
 				case "user_feedback":
 					return (
-						<UserMessage
-							text={message.text}
-							images={message.images}
-							messageTs={message.ts}
-							sendMessageFromChatRow={sendMessageFromChatRow}
-						/>
+						<>
+							<div
+								style={{
+									...headerStyle,
+									color: "white",
+									borderTopLeftRadius: "12px",
+									borderTopRightRadius: "12px",
+									marginBottom: 0,
+								}}>
+								<span
+									className="codicon codicon-comment"
+									style={{
+										color: "white",
+									}}></span>
+								<span style={{ color: "white", fontWeight: "bold" }}>Your Request</span>
+							</div>
+							<UserMessage
+								text={message.text}
+								images={message.images}
+								messageTs={message.ts}
+								sendMessageFromChatRow={sendMessageFromChatRow}
+							/>
+						</>
 					)
 				case "user_feedback_diff":
 					const tool = JSON.parse(message.text || "{}") as ClineSayTool
