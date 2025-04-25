@@ -47,7 +47,10 @@ const TimelineItemsContainer = styled.div`
 	}
 `
 
-const TimelineItem = styled.div<{ itemType: "user_feedback" | "checkpoint" | "task_completed" }>`
+const TimelineItem = styled.div<{
+	itemType: "user_feedback" | "checkpoint" | "task_completed"
+	isSelected?: boolean
+}>`
 	position: relative;
 	width: 30px;
 	height: 30px;
@@ -58,6 +61,12 @@ const TimelineItem = styled.div<{ itemType: "user_feedback" | "checkpoint" | "ta
 	justify-content: center;
 	cursor: pointer;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+	transition: border 0.2s ease-in-out;
+	${(props) =>
+		props.isSelected &&
+		`
+		border: 2px solid rgba(0, 120, 215, 0.5);
+	`}
 
 	${(props) =>
 		props.itemType === "user_feedback" &&
@@ -121,6 +130,7 @@ const getItemIcon = (itemType: "user_feedback" | "checkpoint" | "task_completed"
 const Timeline: React.FC<TimelineProps> = ({ messages }) => {
 	const [hoveredItem, setHoveredItem] = useState<number | null>(null)
 	const [selectedCheckpoint, setSelectedCheckpoint] = useState<number | null>(null)
+	const [restoredCheckpoint, setRestoredCheckpoint] = useState<number | null>(null)
 
 	const timelineItems = useMemo(() => {
 		const messageTypes = messages.map((m) => {
@@ -174,6 +184,7 @@ const Timeline: React.FC<TimelineProps> = ({ messages }) => {
 						<TimelineItemWrapper key={item.ts}>
 							<TimelineItem
 								itemType={itemType}
+								isSelected={restoredCheckpoint === item.ts}
 								onMouseEnter={() => setHoveredItem(item.ts)}
 								onMouseLeave={() => setHoveredItem(null)}
 								onClick={() => {
@@ -184,6 +195,8 @@ const Timeline: React.FC<TimelineProps> = ({ messages }) => {
 												number: item.ts,
 												text: "workspace" satisfies ClineCheckpointRestore,
 											})
+											// Set the restored checkpoint to show the blue border
+											setRestoredCheckpoint(item.ts)
 										} else {
 											setSelectedCheckpoint(item.ts)
 										}
